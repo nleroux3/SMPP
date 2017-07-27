@@ -24,6 +24,8 @@ A test can be run by running the executable "SMPP".
 The input file "inputs.txt" contains the lab snow data from Waldner et al. (2014).
 This file can be modified to model rain on snow or snowmelt of any structured snowpack.
 
+Reference: Waldner, P., Schneebeli, M., Schultze-Zimmermann, U., and Flühler, H.: Effect of snow structure on water flow and solute transport, Hydrological Processes, 18 (7), 1271–1290, 2004.
+
 ## Model outputs
 
 All model ouputs are written in the folder "outputs".
