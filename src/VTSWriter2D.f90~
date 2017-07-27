@@ -1,0 +1,81 @@
+subroutine VTSWriter(TimeStep,nx_ini,ny_ini,nx,ny,x,y,Quantity,folder,opt)
+!---------------------------------------------------------------------------------------!
+!  TimeStep : pas de temps = numero dans le nom de fichier, si TimeStep<0 on ecrit      !
+!             dans sol_exacte.vts                                                       !
+!  nx       : un entier                                                                 !
+!  ny       : un entier                                                                 !
+!  x        : tableau reel (de taille nx,ny) des abscisses des corners des mailles       !
+!  y        : tableau reel (de taille nx,ny) des ordonnees des corners des mailles       !
+!  Quantity : tableau reel (de taille nx-1 par ny-1) de la valeur a tracer              !
+!  folder   : folder in which outputs are created
+!  opt      : variable de type character qui doit prendre l une des valeurs suivantes : !
+!              - 'ini' pour le premier appel a VTSWriter                                !
+!              - 'int' pour un appel standard a VTSWriter                               !
+!              - 'end' pour le dernier appel a VTSWriter                                !
+!---------------------------------------------------------------------------------------!
+  implicit none
+  integer*4 :: TimeStep, nx_ini, ny_ini 
+  integer*4 :: i, j, nx, ny
+  real*8 :: Quantity(nx-1,ny-1)
+  real*8 :: x(nx,ny), y(nx,ny)
+  character(100) :: num2char
+  character(12) :: folder
+  character(200) :: FileName, formatperso,FileName2
+  character(3) :: opt
+ 
+
+  !  --- Ecriture d un fichier temporel au format paraview  ---
+  if (TimeStep >= 0) then
+    write(num2char,'(i6.6)') TimeStep
+    FileName = 'sol_'//trim(num2char)//'.vts'
+    FileName2 = '../outputs/'//folder//'/sol_'//trim(num2char)//'.vts'
+    open(8,file=FileName2)
+  else
+    open(8,file='../outputs/'//folder//'/sol_exacte.vts')
+  end if
+  write(num2char,*) 3*nx*ny
+  formatperso = '('//trim(num2char)//'(F15.6,1x))'
+  write(8,'(a)') '<?xml version="1.0"?>'
+  write(8,'(a)') '<VTKFile type="StructuredGrid">'
+  write(8,'(a,6i6,a)') '<StructuredGrid WholeExtent="', 0,nx-1,0,ny-1,0,0,'">'
+  write(8,'(a,6i6,a)') '<Piece Extent="',0,nx-1,0,ny-1,0,0,'">'
+  write(8,'(a)') '<Points>'
+  write(8,'(a)') '<DataArray type="Float32" NumberOfComponents="3"/>'
+  ! - Ecriture des coordonnees -
+  DO j=1,ny
+     write(8,formatperso) (x(i,j),y(i,j),0.,i=1,nx)
+  END DO
+  write(8,'(a)') '</Points>'
+  write(8,'(a)') '<CellData Scalars="Temperature">'
+  write(8,'(a)') '<DataArray type="Float32" Name="Temperature"/>'
+  write(num2char,*) nx*ny
+  formatperso = '('//trim(num2char)//'(F15.6,1x))'
+  ! - Ecriture des valeurs -
+  DO j=1,ny-1
+     write(8,formatperso) (Quantity(i,j),i=1,nx-1)
+  END DO
+  write(8,'(a)') '</CellData>'
+  write(8,'(a)') '</Piece>'
+  write(8,'(a)') '</StructuredGrid>'
+  write(8,'(a)') '</VTKFile>'
+  close(8)
+
+
+  ! - Remplissage du fichier "Collection" determinant l evolution temporelle -
+  if (opt == 'ini' ) then
+    open(10,file='../outputs/'//folder//'/sol.pvd')
+    write(10,'(a)') '<?xml version="1.0"?>'
+    write(10,*) '<VTKFile type="Collection">'
+    write(10,*) '<Collection>'
+  else
+    open(10,file='../outputs/'//folder//'/sol.pvd',position='append')
+  end if
+  if (TimeStep >= 0) write(10,*) '<DataSet timestep="',TimeStep,'" group="" part="0" file="',trim(FileName),'"/>'
+  if ( opt == 'end') then
+    write(10,*) '</Collection>'
+    write(10,*) '</VTKFile>'
+  end if
+  close(10)
+
+end subroutine VTSWriter
+

@@ -1,0 +1,26 @@
+0.35      L1: horizontal length of snowpack [m]
+0.25	   L2: snowpack depth [m]   
+71       Nb of horizontal nodes  N
+26       Nb of vertical nodes  M
+0.1    standard deviation of perturbation in grain size 
+0.00    standard deviation of perturbation in density
+0.       alpha (slope in rad)   (0.2rad=11 Degrees)
+2	      Nb of snow layers
+10800.   tfinal [s]     10800
+1.       time step [s]
+60 	   Nb of iterations for plotting
+0.0	      rain [m/hr]
+0.       Initial snow surface temperature [oC]
+150.	 Constant flux at surface
+0        0: use of temperature at the interface snow soil, 1: use of heat flux
+0.       Constant temperature at snow-soil or ground heat flux depending on above 
+1        Choice lateral boundary conditions, 0: Periodic BC, 1: both no-flow BC, 2: left no-flow, right free-drainage
+	 Snow layer thickness [m] from bottom to top
+0.15
+0.1
+Initial dry Density (kg/m3)         	water_content (decimal value)          classical_ grain_size(diameter)[m]	sphericity	dentricity (from bottom to top layers)
+480. 0.0 0.0025 1. 0
+540. 0.0 0.0015 1. 0
+         Initial snow layer temperatures [oC] (from bottom to top)
+0.
+0.

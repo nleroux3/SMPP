@@ -1,0 +1,88 @@
+ program main
+ USE Declarations 
+ implicit none
+ integer*4 :: Nt,kk
+ character(5) :: num
+ character(15) :: dir
+! integer*4 :: counter
+ real*8  :: sum_outflow
+!integer :: values(1:8), timing(1:8)
+ 
+!	call date_and_time(values=values)
+  dir='sensitivity/thi'
+  open(98,file='../outputs/'//dir//'/counter.dat')
+  open(77,file='../outputs/'//dir//'/sum_outflow.dat')
+
+
+
+ ! DO counter=11,13
+
+ 	!open(99,file='../snow_layers.txt', access="direct", form="formatted", action="readwrite", recl=3 )
+ 	!write(99,'(I3)',rec=28) counter
+ 	!write(99,'(I3)',rec=40) counter
+
+ 	!close(99)
+	call system("cd ../mesh && make && ./prog")
+
+	
+ 	call read_mesh
+ 	call read_inputs 
+
+
+ 	! Allocate the dimensions to the variables
+
+	 allocate(Fgrav(N-1,M-1),P(N-1,M-1),alpha(N-1,M-1),nn(N-1,M-1),mm(N-1,M-1))
+	 allocate (K(N-1,M-1),K_south(N-1,M-1),Fpres(N-1,M-1))
+	 allocate (K_east(N-1,M-1),K_west(N-1,M-1),K_north(N-1,M-1),Ks(N-1,M-1),Fcond(N-1,M-1),freeze_max(N-1,M-1))
+	 allocate (k_eff(N-1,M-1),k_eff_west(N-1,M-1),k_eff_east(N-1,M-1),k_eff_south(N-1,M-1),k_eff_north(N-1,M-1))
+	 allocate (Qin(N-1),outflow(N-1),mean_water_content(M-1),mean_dry_density(M-1))
+	 allocate(Fgravw(N-1, M-1),Fgravn(N-1, M-1),Fgravs(N-1, M-1))
+	 allocate(Fprese(N-1, M-1),Fpresw(N-1, M-1),Fpresn(N-1, M-1),Fpress(N-1, M-1),Fgrave(N-1, M-1))
+	 allocate(Fconde(N-1, M-1),Fcondw(N-1, M-1),Fcondn(N-1, M-1),Fconds(N-1, M-1))
+
+
+	 irreducible=0.02
+
+	 write(98,*) N-1
+
+	 Dt=Dt_ini
+	 Nt=int(tf/Dt)+1 			! number of time steps
+
+
+
+	 rain=rain/(3600.) ! from [m/hr] to [m/s]
+
+	 write(num, '(i4.4)' ) N
+
+	 call energy_water_flows(Nt,num,dir)
+
+
+ 	 sum_outflow= sum(outflow(:))
+
+	 write(77,*) N-1,sum_outflow,water_content(int(N/2),int(N/2),1)
+
+
+	 deallocate ( xn,yn,xv,yv,Vol,S,Fgrav,Fpres,P,grain_size_ini,wet)
+	 deallocate ( Sx_west,Sy_west,Sx_east,Sy_east,Sx_north,Sy_north,Sx_south,Sy_south)
+	 deallocate ( density,water_content,grain_size,porosity,K,Fcond,cum_layers)
+	 deallocate ( K_south,K_north,K_east,K_west,Ks,freeze_max,alpha,nn,mm)
+	 deallocate ( T,k_eff,k_eff_west,k_eff_east,k_eff_south,k_eff_north)
+	 deallocate ( Tss,Qin,dry_density,outflow,mean_water_content,mean_dry_density)
+	 deallocate (Fconds,Fconde,Fcondn,Fcondw,Fgravs,Fgrave,Fgravw,Fgravn)
+	 deallocate (Fpress,Fprese,Fpresw,Fpresn)
+	  
+
+
+ !ENDDO
+
+
+
+! call date_and_time(values=timing)
+
+!WRITE(*,*) timing-values
+
+ close(77)
+ close (98) 
+ END
+
+

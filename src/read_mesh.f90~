@@ -1,0 +1,60 @@
+! Read the mesh created previously
+SUBROUTINE read_mesh
+USE Declarations 
+
+open(7,FILE='../snow_layers.txt') 
+read(7,*) L1
+read(7,*) L2
+read(7,*) N  
+read(7,*) M
+close(7)
+
+
+ allocate(xn(N,M),yn(N,M),xv(N-1,M-1),yv(N-1,M-1),Vol(N-1,M-1))
+ allocate (Sx_west(N-1,M-1),Sy_west(N-1,M-1),Sx_east(N-1,M-1),Sy_east(N-1,M-1))
+ allocate (Sx_north(N-1,M-1),Sy_north(N-1,M-1),Sx_south(N-1,M-1),Sy_south(N-1,M-1)) 
+
+OPEN(9,FILE='../mesh/xn_yn.txt')  
+
+read(9,*)  
+
+
+DO j=1,M
+	DO i=1,N
+		read(9,*) xn(i,j),yn(i,j)
+	ENDDO
+ENDDO
+
+close(9)
+
+OPEN(10,FILE='../mesh/xv_yv.txt')
+
+DO j=1,M-1
+	DO i=1,N-1
+		read(10,*) xv(i,j),yv(i,j)
+	ENDDO
+ENDDO
+close(10)
+
+OPEN(11,FILE='../mesh/volume.txt')
+
+DO j=1,M-1
+	DO i=1,N-1
+		read(11,*) Vol(i,j)
+	ENDDO
+ENDDO
+close(11)
+
+OPEN(12,FILE='../mesh/surface.txt')
+
+DO j=1,M-1
+	DO i=1,N-1
+		read(12,*)  Sx_west(i,j),Sy_west(i,j),Sx_east(i,j),Sy_east(i,j),Sx_north(i,j),Sy_north(i,j),Sx_south(i,j),Sy_south(i,j)
+	ENDDO
+ENDDO
+close(12)
+
+
+
+return
+END

@@ -1,0 +1,23 @@
+! Declaration of all the variables in the model
+MODULE declarations
+
+
+integer*4 :: N,M,i,j,nb_layers,iterations   ! [rho]=kg/m3
+real*8 :: L1,L2,L3,u,v,tf,CFL,r,Dt,beta,irreducible,rho_i=917.,Tground,Cpi=2110.,Cpa=1003.5,Cpw=4181.3      ! [Cp]=J/kg/K
+real*8 :: Dt_ini,sum_fluxes
+real*8 :: rho_w=1000.,rho_a=1.3,Lf=338000.,rain, exchange,Hn,pert_grain_dens			! [Lf]=J/kg
+real*8,allocatable :: xn(:,:),yn(:,:),xv(:,:),yv(:,:),Vol(:,:)
+real*8, allocatable :: S(:,:),Fgrav(:,:),Fpres(:,:),P(:,:)
+real*8,allocatable :: Sx_west(:,:),Sy_west(:,:),Sx_east(:,:),Sy_east(:,:),Sx_north(:,:),Sy_north(:,:),Sx_south(:,:),Sy_south(:,:)
+real*8,allocatable :: density(:,:),water_content(:,:,:),grain_size(:,:),porosity(:,:),K(:,:),Fcond(:,:),cum_layers(:)
+real*8,allocatable :: K_south(:,:),K_north(:,:),K_east(:,:),K_west(:,:),Ks(:,:),freeze_max(:,:),grain_size_ini(:,:)
+real*8,allocatable :: T(:,:,:),k_eff(:,:),k_eff_west(:,:),k_eff_east(:,:),k_eff_south(:,:),k_eff_north(:,:)
+real*8,allocatable :: Tss(:),Qin(:),dry_density(:,:),outflow(:),mean_water_content(:),mean_dry_density(:),alpha(:,:),nn(:,:),mm(:,:)
+real*8,allocatable :: Fprese(:,:),Fpresw(:,:),Fpresn(:,:),Fpress(:,:),Fgrave(:,:)
+real*8,allocatable :: Fconde(:,:),Fcondw(:,:),Fcondn(:,:),Fconds(:,:)
+real*8, allocatable :: Fgravw(:,:),Fgravn(:,:),Fgravs(:,:)
+integer*4, allocatable :: wet(:,:)
+
+
+
+END MODULE
