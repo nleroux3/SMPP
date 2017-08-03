@@ -70,6 +70,11 @@ endif
 if (wrc_ini .eq. 1) then  ! On main wetting WRC
    order_scanning = 1
 
+   Pdi = -huge(1._dp)
+   Pid = P
+   theta_id(order_scanning) = porosity 
+   theta_di(order_scanning) = irreducible
+
    if (theta_2 .lt. theta_1) then ! WRC moves to drying scanning curve (id : imbibition to dyring)
 
       order_scanning = order_scanning + 1
@@ -261,6 +266,11 @@ endif
 
 if (wrc_ini .eq. 2) then  ! On main drying curve
    order_scanning = 1
+
+   Pdi = -huge(1._dp)
+   Pid = P
+   theta_id(order_scanning) = porosity 
+   theta_di(order_scanning) = irreducible
 
    if (theta_2 .gt. theta_1) then ! Moves to wetting scanning (di: drainage to imbibition)
 
