@@ -1,6 +1,6 @@
-! Read inputs from file "inputs.txt" 
+! Read inputs from file "inputs.txt"
 subroutine read_inputs
-use Declarations 
+use Declarations
 implicit none
 integer :: nb_layers, &                  ! Number of snow layers
        &   sss                           ! Variable
@@ -10,16 +10,16 @@ real(dp) :: thickness, &                 ! Thickness of each snow layer
         &   rr, &                        ! Random variable
         &   rrr, &                       ! Random variable
         &   grain_classic_ini(1,M-1), &  ! Initial grain sizes from input file
-        &   dry_density_ini(1,M-1)       ! Initial densities from input file
+        &   dry_density_ini(1,M-1), &     ! Initial densities from input file
+        &   theta_plus
 real(dp), allocatable :: cumu_layers(:)  ! Cumulative thicknesses
 
-
 !========== Open file "snow_layers.txt" ==============
-open(7,file='inputs.txt') 
-read(7,*) 
-read(7,*) 
-read(7,*)   
-read(7,*) 
+open(7,file='inputs.txt')
+read(7,*)
+read(7,*)
+read(7,*)
+read(7,*)
 read(7,*) pert_grain
 read(7,*) pert_dens
 read(7,*) beta  ! ground slope angle [rad]
@@ -33,6 +33,7 @@ read(7,*) iterations
 read(7,*) rain(1) ! [m/hr]
 
 rain(2:N-1) = rain(1)
+
 
 read(7,*) Tss(1)
 Tss(2:N-1)=Tss(1)
@@ -81,17 +82,17 @@ do j = 1,M-1
    do i = 1,N-1
 
       call random_number(rr)
-      call random_number(rrr)   
+      call random_number(rrr)
       grain_classic(i,j) = grain_classic_ini(1,j)*dabs(1.0_dp+pert_grain*dsqrt(-2._dp * dlog(rr)) * dcos(2._dp*3.14_dp*rrr))
 
       call random_number(rr)
-      call random_number(rrr)   
+      call random_number(rrr)
       dry_density(i,j) = dry_density_ini(1,j)*dabs(1.0_dp+pert_dens*dsqrt(-2._dp * dlog(rr)) * dcos(2._dp*3.14_dp*rrr))
 
       water_content(i,j,1) = water_content(1,j,1)
       sphericity(i,j) = sphericity(1,j)
       dendricity(i,j) = dendricity(1,j)
-      
+
     enddo
 enddo
 
@@ -99,23 +100,28 @@ enddo
 do j = 1,M-1
    do i = 1,N-1
       porosity(i,j) = 1._dp-dry_density(i,j)/rho_i
-      S(i,j) = max((water_content(i,j,1)-irreducible)/(porosity(i,j)-irreducible),0._dp)  
-      density(i,j) = dry_density(i,j)+rho_w*water_content(i,j,1) 
+      S(i,j) = max((water_content(i,j,1)-irreducible)/(porosity(i,j)-irreducible),0._dp)
+      density(i,j) = dry_density(i,j)+rho_w*water_content(i,j,1)
 
       alpha(i,j) = 4.4e6_dp * (grain_classic(i,j)/dry_density(i,j))**(0.98_dp)    ! (Yamaguchi et al., 2012)
       nn(i,j) = 1.0_dp + 2.7e-3_dp * (grain_classic(i,j)/dry_density(i,j))**(-0.61_dp)
       mm(i,j) = 1.0_dp - 1.0_dp/nn(i,j)
       alpha_wetting(i,j) = 2._dp * alpha(i,j)
-      
+
       if (water_content(i,j,1) .gt. irreducible) then ! On main wetting curve
          wrc(i,j) = 1
-         P(i,j) = -((S(i,j)**(-1.0_dp/mm(i,j)) - 1.0_dp) **(1.0_dp/nn(i,j))) / alpha_wetting(i,j)   
+         P(i,j) = -((S(i,j)**(-1.0_dp/mm(i,j)) - 1.0_dp) **(1.0_dp/nn(i,j))) / alpha_wetting(i,j)
       else  ! on WEP
          wrc(i,j) = 0
          P(i,j) = -(0.0437_dp / grain_classic(i,j) * 1e-3_dp + 0.01074_dp)
       endif
 
-  
+      ! To initilize theta_id, theta_do, theta_r, theta_s, order_scanning
+      call hysteresis(wrc(i,j), P(i,j), P(i,j), alpha, alpha_wetting, porosity(i,j), water_content(i,j,1)&
+         & , water_content(i,j,1), nn(i,j), mm(i,j), Pdi(i,j), &
+         & Pid(i,j), theta_id(i,j,:), theta_di(i,j,:), grain_classic(i,j) &
+         & , theta_plus,theta_s(i,j,:), theta_r(i,j,:), order_scanning(i,j))
+
 
    enddo
 enddo
@@ -147,7 +153,6 @@ close (7)
 
 
 T(:,:,2) = T(:,:,1)
-
 
 deallocate(cumu_layers)
 

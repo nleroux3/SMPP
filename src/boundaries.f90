@@ -1,7 +1,7 @@
 ! Calculates mass and energy fluxes at the boundaries of the domain
 subroutine boundaries
-use declarations
-implicit none  
+USE declarations
+implicit none
 
 
 
@@ -16,31 +16,31 @@ implicit none
             !=================== Mass flux due to water pressure gradients ===============================
             Fprese(i,j) = K_east(i,j) * (P(i+1,j)-P(i,j)) * &
                & ( Sx_east(i,j) / dabs(xv(i+1,j)-xv(i,j)) + &
-               & Sy_east(i,j) / dabs(yv(i+1,j)-yv(i,j))) 
+               & Sy_east(i,j) / dabs(yv(i+1,j)-yv(i,j)))
             Fpress(i,j) = K_south(i,j) * (P(i,j-1)-P(i,j)) * &
                & ( Sx_south(i,j) / dabs(xv(i,j-1)-xv(i,j)) + &
-               & Sy_south(i,j) / dabs(yv(i,j-1)-yv(i,j))) 
+               & Sy_south(i,j) / dabs(yv(i,j-1)-yv(i,j)))
             Fpresn(i,j) = K_north(i,j) * (P(i,j+1)-P(i,j)) * &
                & ( Sx_north(i,j) / dabs(xv(i,j+1)-xv(i,j)) + &
-               & Sy_north(i,j) / dabs(yv(i,j+1)-yv(i,j))) 
+               & Sy_north(i,j) / dabs(yv(i,j+1)-yv(i,j)))
 
             if (choice_lat_BC .eq. 2 .or. choice_lat_BC .eq. 1) then
                 Fpresw(i,j) = 0.0_dp
-                Fgravw(i,j) = 0.0_dp    
+                Fgravw(i,j) = 0.0_dp
             elseif (choice_lat_BC .eq. 0) then
-                Fpresw(i,j) = K_west(i,j) * (P(M-1,j)-P(i,j)) * &
+                Fpresw(i,j) = K_west(i,j) * (P(N-1,j)-P(i,j)) * &
                    & ( Sx_west(i,j) / dabs((xn(N,j)-xv(N-1,j)) + &
                    & (xv(i,j ) - xn(i,j)) ) + &
                    & Sy_west(i,j) / dabs( yv(N-1,j)-yv(i,j)))
                 Fgravw(i,j) = K_west(i,j) * Sy_west(i,j)
             endif
-         
+
             !================ Mass flux due to gravity force ==============================
-            Fgrave(i,j) = -K_east(i,j) * Sy_east(i,j)                                       
-            Fgravn(i,j) = K_north(i,j) * Sy_north(i,j)                   
+            Fgrave(i,j) = -K_east(i,j) * Sy_east(i,j)
+            Fgravn(i,j) = K_north(i,j) * Sy_north(i,j)
             Fgravs(i,j) = -K_south(i,j) * Sy_south(i,j)
 
-            !====================== Heat flux ==================================   
+            !====================== Heat flux ==================================
             Fconds(i,j) = k_eff_south(i,j) * (T(i,j-1,1)-T(i,j,1)) * &
                & (Sy_south(i,j) / dabs(yv(i,j)-yv(i,j-1)) + &
                & Sx_south(i,j) / dabs(xv(i,j)-xv(i,j-1)))
@@ -57,25 +57,25 @@ implicit none
             !========================================================================================================
             !====================================  East Boundary (except upper and lower cells) ======================
             !========================================================================================================
-            i = N-1   
+            i = N-1
 
             !=========== Mass flux due to water pressure gradients ================================
             Fpresw(i,j) = K_west(i,j) * (P(i-1,j)-P(i,j)) * &
                & (Sx_west(i,j) / (dabs(xv(i,j)-xv(i-1,j))) + &
                & Sy_west(i,j) / (dabs(yv(i,j)-yv(i-1,j))) )
             Fpress(i,j) = K_south(i,j) * (P(i,j-1)-P(i,j)) * &
-               & (Sy_south(i,j) / (dabs(yv(i,j)-yv(i,j-1))) + & 
-               & Sx_south(i,j) / (dabs(xv(i,j)-xv(i,j-1))))   
+               & (Sy_south(i,j) / (dabs(yv(i,j)-yv(i,j-1))) + &
+               & Sx_south(i,j) / (dabs(xv(i,j)-xv(i,j-1))))
             Fpresn(i,j) = K_north(i,j) * (P(i,j+1)-P(i,j)) * &
                & (Sy_north(i,j) / (dabs(yv(i,j+1)-yv(i,j))) + &
-               & Sx_north(i,j) / (dabs(xv(i,j+1)-xv(i,j))))  
+               & Sx_north(i,j) / (dabs(xv(i,j+1)-xv(i,j))))
 
 
             if (choice_lat_BC .eq. 2) then
-               Fprese(i,j) = 0.0_dp 
+               Fprese(i,j) = 0.0_dp
                Fgrave(i,j) = -K_east(i,j) * Sy_east(i,j)
             elseif (choice_lat_BC .eq. 1) then
-               Fprese(i,j) = 0.0_dp 
+               Fprese(i,j) = 0.0_dp
                Fgrave(i,j) = 0.0_dp
             elseif (choice_lat_BC .eq. 0) then
                Fprese(i,j) = K_east(i,j) * (P(1,j)-P(i,j)) * &
@@ -83,27 +83,27 @@ implicit none
                   & (xv(1,j) - xn(1,j)) ) + &
                   & Sy_east(i,j) / dabs( yv(i,j)-yv(1,j)) )
                Fgrave(i,j) = -K_east(i,j) * Sy_east(i,j)
-            endif 
+            endif
 
             !=========== Mass flux due to gravity force =================================
-            Fgravw(i,j) = K_west(i,j) * Sy_west(i,j)                                                
-            Fgravn(i,j) = K_north(i,j) * Sy_north(i,j)                      
+            Fgravw(i,j) = K_west(i,j) * Sy_west(i,j)
+            Fgravn(i,j) = K_north(i,j) * Sy_north(i,j)
             Fgravs(i,j) = -K_south(i,j) * Sy_south(i,j)
 
 
-            !====================== heat flux ==========================================    
+            !====================== heat flux ==========================================
             Fconds(i,j) = k_eff_south(i,j) * (T(i,j-1,1)-T(i,j,1)) * &
                & (Sy_south(i,j) / (dabs(yv(i,j)-yv(i,j-1))) + &
                & Sx_south(i,j) / (dabs(xv(i,j)-xv(i,j-1))))
             Fcondn(i,j) = k_eff_north(i,j) * (T(i,j+1,1)-T(i,j,1)) * &
-               & (Sy_north(i,j) / (dabs(yv(i,j)-yv(i,j+1))) + & 
+               & (Sy_north(i,j) / (dabs(yv(i,j)-yv(i,j+1))) + &
                & Sx_north(i,j) / (dabs(xv(i,j)-xv(i,j+1))))
             Fconde(i,j) = 0.0_dp
             Fcondw(i,j) = k_eff_west(i,j) * (T(i-1,j,1)-T(i,j,1)) * &
                & (Sy_west(i,j) / (dabs(yv(i,j)-yv(i-1,j))) + &
                & Sx_west(i,j) / (dabs(xv(i,j)-xv(i-1,j))))
 
-         enddo 
+         enddo
       else   ! flat snowpack (beta == 0)
          do j = 2,M-2
 
@@ -113,65 +113,65 @@ implicit none
             i=1
             !============ Mass flux due to WATER PRESSURE GRADIENTS =================
             Fprese(i,j) = Sx_east(i,j) * K_east(i,j) * &
-               & (P(i+1,j)-P(i,j)) / (dabs(xv(i+1,j)-xv(i,j)))                                
+               & (P(i+1,j)-P(i,j)) / (dabs(xv(i+1,j)-xv(i,j)))
             Fpress(i,j) = Sy_south(i,j) * K_south(i,j) * &
-               & (P(i,j-1)-P(i,j)) / (dabs(yv(i,j)-yv(i,j-1)))  
+               & (P(i,j-1)-P(i,j)) / (dabs(yv(i,j)-yv(i,j-1)))
             Fpresn(i,j) = Sy_north(i,j) * K_north(i,j) * &
-               & (P(i,j+1)-P(i,j)) / (dabs(yv(i,j+1)-yv(i,j))) 
-      
-         
+               & (P(i,j+1)-P(i,j)) / (dabs(yv(i,j+1)-yv(i,j)))
+
+
              if (choice_lat_BC .eq. 2 .or. choice_lat_BC .eq. 1) then
-               Fpresw(i,j) = 0.0_dp 
-               Fgravw(i,j) = 0.0_dp                                 
+               Fpresw(i,j) = 0.0_dp
+               Fgravw(i,j) = 0.0_dp
             elseif (choice_lat_BC .eq. 0) then
-                Fpresw(i,j) = K_west(i,j) * (P(M-1,j)-P(i,j)) * &
+                Fpresw(i,j) = K_west(i,j) * (P(N-1,j)-P(i,j)) * &
                    & (Sx_west(i,j) / dabs((xn(N,j)-xv(N-1,j)) + &
                    & (xv(i,j ) - xn(i,j)) ))
                 Fgravw(i,j) = K_west(i,j) * Sy_west(i,j)
             endif
             !=================== Mass flux due to gravity force =======================
-            Fgrave(i,j) = -K_east(i,j) * Sy_east(i,j)                                       
-            Fgravn(i,j) = K_north(i,j) * Sy_north(i,j)                   
+            Fgrave(i,j) = -K_east(i,j) * Sy_east(i,j)
+            Fgravn(i,j) = K_north(i,j) * Sy_north(i,j)
             Fgravs(i,j) = -K_south(i,j) * Sy_south(i,j)
-                             
-            !====================== Heat flux ======================================   
+
+            !====================== Heat flux ======================================
             Fconds(i,j) = Sy_south(i,j) * k_eff_south(i,j) * &
                & (T(i,j-1,1)-T(i,j,1)) / (dabs(yv(i,j)-yv(i,j-1)))
             Fcondn(i,j) = Sy_north(i,j) * k_eff_north(i,j) * &
                & (T(i,j+1,1)-T(i,j,1)) / (dabs(yv(i,j)-yv(i,j+1)))
             Fconde(i,j) = Sx_east(i,j) * k_eff_east(i,j) * &
-               & (T(i+1,j,1)-T(i,j,1)) / (dabs(xv(i,j)-xv(i+1,j))) 
+               & (T(i+1,j,1)-T(i,j,1)) / (dabs(xv(i,j)-xv(i+1,j)))
             Fcondw(i,j) = Sx_west(i,j) * k_eff_west(i,j) * &
                   & (T(N-1,j,1)-T(i,j,1)) / dabs(xv(i+1,j)-xv(i,j))
 
             !========================================================================================================
             !====================================  East Boundary (except upper and lower cells) ======================
             !========================================================================================================
-            i = N-1   
+            i = N-1
             !========= Mass flux due to WATER PRESSURE GRADIENTS --------------------------------
             Fpresw(i,j) = Sx_west(i,j) * K_west(i,j) * (P(i-1,j)-P(i,j)) &
-               & / (dabs(xv(i,j)-xv(i-1,j))) 
+               & / (dabs(xv(i,j)-xv(i-1,j)))
             Fpress(i,j) = Sy_south(i,j) * K_south(i,j)*(P(i,j-1)-P(i,j)) &
-               & / (dabs(yv(i,j)-yv(i,j-1)))  
+               & / (dabs(yv(i,j)-yv(i,j-1)))
             Fpresn(i,j) = Sy_north(i,j) * K_north(i,j) * (P(i,j+1)-P(i,j)) &
-               & / (dabs(yv(i,j)-yv(i,j+1))) 
-                                           
+               & / (dabs(yv(i,j)-yv(i,j+1)))
+
             if (choice_lat_BC .eq. 2) then
-               Fprese(i,j) = 0.0_dp 
+               Fprese(i,j) = 0.0_dp
                Fgrave(i,j) = -K_east(i,j) * Sy_east(i,j)
             elseif (choice_lat_BC .eq. 1) then
-               Fprese(i,j) = 0.0_dp 
+               Fprese(i,j) = 0.0_dp
                Fgrave(i,j) = 0.0_dp
             elseif (choice_lat_BC .eq. 0) then
                Fprese(i,j) = K_east(i,j) * (P(1,j)-P(i,j)) * &
                   & ( Sx_east(i,j) / dabs((xn(N,j)-xv(i,j)) + &
                   & (xv(1,j) - xn(1,j)) ))
                Fgrave(i,j) = -K_east(i,j) * Sy_east(i,j)
-            endif 
+            endif
 
             !=========== Mass flux due to gravity force =================================
-            Fgravw(i,j) = K_west(i,j) * Sy_west(i,j)                                                
-            Fgravn(i,j) = K_north(i,j) * Sy_north(i,j)                      
+            Fgravw(i,j) = K_west(i,j) * Sy_west(i,j)
+            Fgravn(i,j) = K_north(i,j) * Sy_north(i,j)
             Fgravs(i,j) = -K_south(i,j) * Sy_south(i,j)
 
 
@@ -185,9 +185,9 @@ implicit none
             Fcondw(i,j) = Sx_west(i,j) * k_eff_west(i,j) * (T(i-1,j,1)-T(i,j,1))&
                & / (dabs(xv(i,j)-xv(i-1,j)))
 
-         enddo 
+         enddo
 
-      endif  
+      endif
    endif
 
 
@@ -195,36 +195,36 @@ implicit none
    !==================================== Lower left cell ========================================
    i=1
    if (M .gt. 2) then ! more than two horizontal snow layers
-      j=1    
+      j=1
       if (beta .gt. 0.0001)then   ! sloping snowpack
 
             !====================== Mass flux due to water pressure gradient ======================
             Fpress(i,j) = 0.0_dp
             Fprese(i,j) = K_east(i,j) * (P(i+1,j)-P(i,j)) * &
                & ( Sx_east(i,j) / dabs(xv(i+1,j)-xv(i,j)) + &
-               & Sy_east(i,j) / dabs(yv(i+1,j)-yv(i,j))) 
+               & Sy_east(i,j) / dabs(yv(i+1,j)-yv(i,j)))
             Fpresn(i,j) = K_north(i,j) * (P(i,j+1)-P(i,j)) * &
                & ( Sx_north(i,j) / dabs(xv(i,j+1)-xv(i,j)) + &
-               & Sy_north(i,j) / dabs(yv(i,j+1)-yv(i,j))) 
+               & Sy_north(i,j) / dabs(yv(i,j+1)-yv(i,j)))
 
             if (choice_lat_BC .eq. 2 .or. choice_lat_BC .eq. 1) then
-               Fpresw(i,j) = 0.0_dp 
-               Fgravw(i,j) = 0.0_dp                                     
+               Fpresw(i,j) = 0.0_dp
+               Fgravw(i,j) = 0.0_dp
             elseif (choice_lat_BC .eq. 0) then
-                Fpresw(i,j) = K_west(i,j) * (P(M-1,j)-P(i,j)) * &
+                Fpresw(i,j) = K_west(i,j) * (P(N-1,j)-P(i,j)) * &
                    & ( Sx_west(i,j) / dabs((xn(N,j)-xv(N-1,j)) + &
                    & (xv(i,j) - xn(i,j)) ) + &
                    & Sy_west(i,j) / dabs( yv(N-1,j)-yv(i,j)))
                 Fgravw(i,j) = K_west(i,j) * Sy_west(i,j)
-            endif 
+            endif
 
             !=============== Mass flux due to gravity force ==================
-            Fgrave(i,j) = -K_east(i,j) * Sy_east(i,j)                                       
-            Fgravn(i,j) = K_north(i,j) * Sy_north(i,j)                       
-            Fgravs(i,j) = -K_south(i,j) * Sy_south(i,j)  
+            Fgrave(i,j) = -K_east(i,j) * Sy_east(i,j)
+            Fgravn(i,j) = K_north(i,j) * Sy_north(i,j)
+            Fgravs(i,j) = -K_south(i,j) * Sy_south(i,j)
 
 
-            !=================== Heat flux ===============================   
+            !=================== Heat flux ===============================
             if (index_ground .eq. 0) then  ! use ground temperature
                Fconds(i,j) = k_eff_south(i,j)*(Tground-T(i,j,1)) * &
                   & (Sy_south(i,j) / (dabs(yn(i,j+1)-yn(i,j))*0.5_dp) + &
@@ -243,37 +243,37 @@ implicit none
       else   ! flat snowpack (beta == 0)
 
             !============ Mass flux due to water pressure gradients =================================
-            Fprese(i,j) = Sx_east(i,j) * K_east(i,j) * (P(i+1,j)-P(i,j)) / (dabs(xv(i+1,j)-xv(i,j)))   
+            Fprese(i,j) = Sx_east(i,j) * K_east(i,j) * (P(i+1,j)-P(i,j)) / (dabs(xv(i+1,j)-xv(i,j)))
             Fpress(i,j) = 0.0_dp
-            Fpresn(i,j) = Sy_north(i,j) * K_north(i,j) * (P(i,j+1)-P(i,j)) / (dabs(yv(i,j+1)-yv(i,j))) 
-               
+            Fpresn(i,j) = Sy_north(i,j) * K_north(i,j) * (P(i,j+1)-P(i,j)) / (dabs(yv(i,j+1)-yv(i,j)))
+
             if (choice_lat_BC .eq. 2 .or. choice_lat_BC .eq. 1) then
-               Fpresw(i,j) = 0.0_dp 
-               Fgravw(i,j) = 0.0_dp                                     
+               Fpresw(i,j) = 0.0_dp
+               Fgravw(i,j) = 0.0_dp
             elseif (choice_lat_BC .eq. 0) then
-               Fpresw(i,j) = K_west(i,j) * (P(M-1,j)-P(i,j)) * &
+               Fpresw(i,j) = K_west(i,j) * (P(N-1,j)-P(i,j)) * &
                   & (Sx_west(i,j) / dabs((xn(N,j)-xv(N-1,j)) + &
                   & (xv(i,j) - xn(i,j)) ))
                Fgravw(i,j) = K_west(i,j) * Sy_west(i,j)
-            endif 
+            endif
 
             !============ Mass flux due to gravity force ===================================
-            Fgrave(i,j) = -K_east(i,j)*Sy_east(i,j)                                       
-            Fgravn(i,j) = K_north(i,j)*Sy_north(i,j)                   
+            Fgrave(i,j) = -K_east(i,j)*Sy_east(i,j)
+            Fgravn(i,j) = K_north(i,j)*Sy_north(i,j)
             Fgravs(i,j) = -K_south(i,j)*Sy_south(i,j)
 
-            !====================== Heat flux ==============================================  
+            !====================== Heat flux ==============================================
             if (index_ground .eq. 0) then ! temperature at soil-snow
                Fconds(i,j) = Sy_south(i,j) * k_eff_south(i,j) * (Tground-T(i,j,1)) / (dabs(yn(i,j+1)-yn(i,j))*0.5_dp)
             else
                Fconds(i,j) = Sy_south(i,j) * Qground
             endif
             Fcondn(i,j) = Sy_north(i,j) * k_eff_north(i,j) * (T(i,j+1,1)-T(i,j,1)) / (dabs(yv(i,j)-yv(i,j+1)))
-            Fconde(i,j) = Sx_east(i,j) * k_eff_east(i,j) * (T(i+1,j,1)-T(i,j,1)) / (dabs(xv(i,j)-xv(i+1,j))) 
+            Fconde(i,j) = Sx_east(i,j) * k_eff_east(i,j) * (T(i+1,j,1)-T(i,j,1)) / (dabs(xv(i,j)-xv(i+1,j)))
             Fcondw(i,j) = Sx_west(i,j) * k_eff_west(i,j) * &
                   & (T(N-1,j,1)-T(i,j,1)) / dabs(xv(i+1,j)-xv(i,j))
 
-      endif 
+      endif
    endif
 
 
@@ -282,36 +282,36 @@ implicit none
    !====================== Upper left cells =====================
    i=1
    if (M .gt. 2) then ! more than one layer
-      j=M-1    
+      j=M-1
       if (beta .gt. 0.0001) then
 
-            !=========== Mass flux due to water pressure gradients =======================         
+            !=========== Mass flux due to water pressure gradients =======================
             Fprese(i,j) = K_east(i,j)*(P(i+1,j)-P(i,j)) * &
                & (Sx_east(i,j) / (dabs(xv(i+1,j)-xv(i,j))) + &
-               & Sy_east(i,j) / (dabs(yv(i+1,j)-yv(i,j))))                                  
+               & Sy_east(i,j) / (dabs(yv(i+1,j)-yv(i,j))))
             Fpress(i,j) = K_south(i,j) * (P(i,j-1)-P(i,j)) * &
                & (Sy_south(i,j) / (dabs(yv(i,j)-yv(i,j-1))) + &
-               & Sx_south(i,j) / (dabs(xv(i,j)-xv(i,j-1))))   
+               & Sx_south(i,j) / (dabs(xv(i,j)-xv(i,j-1))))
             Fpresn(i,j) = 0.0_dp
 
             if (choice_lat_BC .eq. 2 .or. choice_lat_BC .eq. 1) then
-               Fpresw(i,j) = 0.0_dp 
-               Fgravw(i,j) = 0.0_dp                                     
+               Fpresw(i,j) = 0.0_dp
+               Fgravw(i,j) = 0.0_dp
             elseif (choice_lat_BC .eq. 0) then
-               Fpresw(i,j) = K_west(i,j) * (P(M-1,j)-P(i,j)) * &
+               Fpresw(i,j) = K_west(i,j) * (P(N-1,j)-P(i,j)) * &
                   & ( Sx_west(i,j) / dabs((xn(N,j)-xv(N-1,j)) + &
                   & (xv(i,j) - xn(i,j))) + &
                   & Sy_west(i,j) / dabs( yv(N-1,j)-yv(i,j)) )
                Fgravw(i,j) = K_west(i,j) * Sy_west(i,j)
-            endif 
+            endif
 
             !============= Mass flux due to gravity force ======================
-            Fgrave(i,j) = -K_east(i,j) * Sy_east(i,j)                                       
+            Fgrave(i,j) = -K_east(i,j) * Sy_east(i,j)
             Fgravn(i,j) = (Qin(i)+rain(i)) * Sy_north(i,j)
             Fgravs(i,j) = -K_south(i,j) * Sy_south(i,j)
 
 
-            !======================== heat flux =========================================   
+            !======================== heat flux =========================================
             Fconds(i,j) = k_eff_south(i,j) * (T(i,j-1,1)-T(i,j,1)) * &
                & (Sy_south(i,j) / dabs(yv(i,j)-yv(i,j-1)) + &
                & Sx_south(i,j) / dabs(xv(i,j)-xv(i,j-1)))
@@ -326,35 +326,35 @@ implicit none
       else   ! flat snowpack (beta == 0)
 
             !================= Mass flux due to water pressure gradients ================================
-            Fprese(i,j) = Sx_east(i,j)*K_east(i,j)*(P(i+1,j)-P(i,j))/(dabs(xv(i+1,j)-xv(i,j)))                                
-            Fpress(i,j) = Sy_south(i,j)*K_south(i,j)*(P(i,j-1)-P(i,j))/(dabs(yv(i,j)-yv(i,j-1)))  
+            Fprese(i,j) = Sx_east(i,j)*K_east(i,j)*(P(i+1,j)-P(i,j))/(dabs(xv(i+1,j)-xv(i,j)))
+            Fpress(i,j) = Sy_south(i,j)*K_south(i,j)*(P(i,j-1)-P(i,j))/(dabs(yv(i,j)-yv(i,j-1)))
             Fpresn(i,j) = 0.0_dp
-                      
+
 
             if (choice_lat_BC .eq. 2 .or. choice_lat_BC .eq. 1) then
-               Fpresw(i,j) = 0.0_dp 
-               Fgravw(i,j) = 0.0_dp                                     
+               Fpresw(i,j) = 0.0_dp
+               Fgravw(i,j) = 0.0_dp
             elseif (choice_lat_BC .eq. 0) then
-               Fpresw(i,j) = K_west(i,j) * (P(M-1,j)-P(i,j)) * &
+               Fpresw(i,j) = K_west(i,j) * (P(N-1,j)-P(i,j)) * &
                   & (Sx_west(i,j) / dabs((xn(N,j)-xv(N-1,j)) + &
                   & (xv(i,j) - xn(i,j)) ))
                Fgravw(i,j) = K_west(i,j) * Sy_west(i,j)
-            endif 
+            endif
 
             !=========== Mass flux due to gravity force ================================
-            Fgrave(i,j) = -K_east(i,j) * Sy_east(i,j)                                       
+            Fgrave(i,j) = -K_east(i,j) * Sy_east(i,j)
             Fgravn(i,j) = (Qin(i)+rain(i)) * Sy_north(i,j)
             Fgravs(i,j) = -K_south(i,j) * Sy_south(i,j)
 
 
-            !======================= heat flux ==========================================   
+            !======================= heat flux ==========================================
             Fconds(i,j) = Sy_south(i,j) * k_eff_south(i,j) * (T(i,j-1,1)-T(i,j,1))/(dabs(yv(i,j)-yv(i,j-1)))
             Fcondn(i,j) = Sy_north(i,j) * k_eff_north(i,j) * (Tss(i)-T(i,j,1))/(dabs(yn(i,j+1)-yn(i,j))*0.5_dp)
-            Fconde(i,j) = Sx_east(i,j) * k_eff_east(i,j) * (T(i+1,j,1)-T(i,j,1))/(dabs(xv(i,j)-xv(i+1,j))) 
+            Fconde(i,j) = Sx_east(i,j) * k_eff_east(i,j) * (T(i+1,j,1)-T(i,j,1))/(dabs(xv(i,j)-xv(i+1,j)))
             Fcondw(i,j) = Sx_west(i,j) * k_eff_west(i,j) * &
                   & (T(N-1,j,1)-T(i,j,1)) / dabs(xv(i+1,j)-xv(i,j))
 
-      endif 
+      endif
    endif
 
 
@@ -363,35 +363,35 @@ implicit none
          do i = 2,N-2
 
             !==================================================================================================
-            !================================ North Boundary (except west and east cells) =============================         
+            !================================ North Boundary (except west and east cells) =============================
             !==================================================================================================
-            j=M-1 
+            j=M-1
 
             !=========== Mass flux due to water pressure gradients =================================
             Fpresw(i,j) = K_west(i,j) * (P(i-1,j)-P(i,j)) * &
                & (Sx_west(i,j) / dabs(xv(i,j)-xv(i-1,j)) + &
-               & Sy_west(i,j) / dabs(yv(i,j)-yv(i-1,j))) 
+               & Sy_west(i,j) / dabs(yv(i,j)-yv(i-1,j)))
             Fprese(i,j) = K_east(i,j) * (P(i+1,j)-P(i,j)) * &
                & (Sx_east(i,j) / dabs(xv(i+1,j)-xv(i,j)) + &
-               & Sy_east(i,j) / dabs(yv(i+1,j)-yv(i,j)))                                       
+               & Sy_east(i,j) / dabs(yv(i+1,j)-yv(i,j)))
             Fpress(i,j) = K_south(i,j) * (P(i,j-1)-P(i,j)) * &
                & (Sy_south(i,j) / dabs(yv(i,j)-yv(i,j-1)) + &
-               & Sx_south(i,j) / dabs(xv(i,j)-xv(i,j-1)))   
+               & Sx_south(i,j) / dabs(xv(i,j)-xv(i,j-1)))
             Fpresn(i,j)=0.0_dp
 
             !=========== Mass flux due to gravity force ================================
-            Fgravw(i,j) = K_west(i,j)*Sy_west(i,j)                                                
-            Fgrave(i,j) = -K_east(i,j)*Sy_east(i,j)                                                
+            Fgravw(i,j) = K_west(i,j)*Sy_west(i,j)
+            Fgrave(i,j) = -K_east(i,j)*Sy_east(i,j)
             Fgravn(i,j) = (Qin(i)+rain(i))*Sy_north(i,j)
             Fgravs(i,j) = -K_south(i,j)*Sy_south(i,j)
 
-            !====================== heat flux ===========================================   
+            !====================== heat flux ===========================================
             Fconds(i,j) = k_eff_south(i,j) * (T(i,j-1,1)-T(i,j,1)) * &
                & (Sy_south(i,j) / dabs(yv(i,j)-yv(i,j-1)) + &
                & Sx_south(i,j) / dabs(xv(i,j)-xv(i,j-1)))
             Fcondn(i,j) = k_eff_north(i,j) * (Tss(i)-T(i,j,1)) * &
                & (Sy_north(i,j) / (dabs(yn(i,j+1)-yn(i,j))*0.5_dp) + &
-               & Sx_north(i,j) / dabs(xv(i,j)-(xn(i,j+1)+xn(i+1,j+1))*0.5_dp)) 
+               & Sx_north(i,j) / dabs(xv(i,j)-(xn(i,j+1)+xn(i+1,j+1))*0.5_dp))
             Fconde(i,j) = k_eff_east(i,j) * (T(i+1,j,1)-T(i,j,1)) * &
                & (Sy_east(i,j) / dabs(yv(i,j)-yv(i+1,j)) + &
                & Sx_east(i,j) / dabs(xv(i,j)-xv(i+1,j)))
@@ -401,34 +401,34 @@ implicit none
 
 
             !================================================================================================
-            !========================== South boundary (except left and right cells) =============================== 
+            !========================== South boundary (except left and right cells) ===============================
             !================================================================================================
-            j=1     
-            !=========== Mass flux due to water pressure gradients =============================== 
+            j=1
+            !=========== Mass flux due to water pressure gradients ===============================
              Fpresw(i,j) = K_west(i,j) * (P(i-1,j)-P(i,j)) * &
-               & (Sx_west(i,j) / (dabs(xv(i,j)-xv(i-1,j))) + & 
-               & Sy_west(i,j) / (dabs(yv(i,j)-yv(i-1,j)))) 
+               & (Sx_west(i,j) / (dabs(xv(i,j)-xv(i-1,j))) + &
+               & Sy_west(i,j) / (dabs(yv(i,j)-yv(i-1,j))))
             Fprese(i,j) = K_east(i,j) * (P(i+1,j)-P(i,j)) * &
                & (Sx_east(i,j) / (dabs(xv(i+1,j)-xv(i,j))) + &
-               & Sy_east(i,j) / (dabs(yv(i+1,j)-yv(i,j))))                                 
-            Fpress(i,j) = 0.0_dp 
+               & Sy_east(i,j) / (dabs(yv(i+1,j)-yv(i,j))))
+            Fpress(i,j) = 0.0_dp
             Fpresn(i,j) = K_north(i,j) * (P(i,j+1)-P(i,j)) * &
                & (Sy_north(i,j) / (dabs(yv(i,j+1)-yv(i,j))) + &
-               & Sx_north(i,j) / (dabs(xv(i,j+1)-xv(i,j)))) 
-   
+               & Sx_north(i,j) / (dabs(xv(i,j+1)-xv(i,j))))
+
 
             !=========== Mass flux due to gravity force =================================
-            Fgravw(i,j) = K_west(i,j) * Sy_west(i,j)                                       
-            Fgrave(i,j) = -K_east(i,j) * Sy_east(i,j)                                       
-            Fgravn(i,j) = K_north(i,j) * Sy_north(i,j)                       
-            Fgravs(i,j) = -K_south(i,j) * Sy_south(i,j)  
-                        
+            Fgravw(i,j) = K_west(i,j) * Sy_west(i,j)
+            Fgrave(i,j) = -K_east(i,j) * Sy_east(i,j)
+            Fgravn(i,j) = K_north(i,j) * Sy_north(i,j)
+            Fgravs(i,j) = -K_south(i,j) * Sy_south(i,j)
 
-            !====================== heat flux ======================================      
+
+            !====================== heat flux ======================================
             if (index_ground .eq. 0) then  ! use temperature at the interface snow-soil
                Fconds(i,j) = k_eff_south(i,j) * (Tground-T(i,j,1)) * &
                   & (Sy_south(i,j) / (dabs(yn(i,j+1)-yn(i,j))*0.5_dp) + &
-                  & Sx_south(i,j) / (dabs(xv(i,j)-(xn(i+1,j)+xn(i,j))*0.5_dp)) ) 
+                  & Sx_south(i,j) / (dabs(xv(i,j)-(xn(i+1,j)+xn(i,j))*0.5_dp)) )
             else
                Fconds(i,j) = Sy_south(i,j) * Qground
             endif
@@ -450,54 +450,54 @@ implicit none
 
 
             !==================================================================================================
-            !================================ North Boundary (except west and east cells) =============================         
+            !================================ North Boundary (except west and east cells) =============================
             !==================================================================================================
-            j=M-1 
+            j=M-1
             !=========== Mass flux due to water pressure gradients ================================
             Fpresw(i,j) = Sx_west(i,j) * K_west(i,j) * (P(i-1,j)-P(i,j)) / &
                  & dabs(xv(i,j)-xv(i-1,j))
             Fprese(i,j) = Sx_east(i,j) * K_east(i,j) * (P(i+1,j)-P(i,j)) / &
                  & dabs(xv(i+1,j)-xv(i,j))
             Fpress(i,j) = Sy_south(i,j) * K_south(i,j) * (P(i,j-1)-P(i,j)) / &
-                 & dabs(yv(i,j)-yv(i,j-1))  
-            Fpresn(i,j) = 0.0_dp 
+                 & dabs(yv(i,j)-yv(i,j-1))
+            Fpresn(i,j) = 0.0_dp
 
             !=========== Mass flux due to gravity force ================================
-            Fgravw(i,j) = K_west(i,j) * Sy_west(i,j)                                                
-            Fgrave(i,j) = -K_east(i,j) * Sy_east(i,j)                                                
+            Fgravw(i,j) = K_west(i,j) * Sy_west(i,j)
+            Fgrave(i,j) = -K_east(i,j) * Sy_east(i,j)
             Fgravn(i,j) = (Qin(i)+rain(i)) * Sy_north(i,j)
             Fgravs(i,j) = -K_south(i,j) * Sy_south(i,j)
-   
 
-            !====================== heat flux ===========================================   
+
+            !====================== heat flux ===========================================
             Fconds(i,j) = Sy_south(i,j) * k_eff_south(i,j) * (T(i,j-1,1)-T(i,j,1)) / &
                & dabs(yv(i,j)-yv(i,j-1))
             Fcondn(i,j) = Sy_north(i,j) * k_eff_north(i,j) * (Tss(i)-T(i,j,1)) / &
                & (dabs(yn(i,j+1)-yn(i,j))*0.5_dp)
             Fconde(i,j) = Sx_east(i,j) * k_eff_east(i,j) * (T(i+1,j,1)-T(i,j,1)) / &
-               & dabs(xv(i,j)-xv(i+1,j)) 
+               & dabs(xv(i,j)-xv(i+1,j))
             Fcondw(i,j) = Sx_west(i,j) * k_eff_west(i,j) * (T(i-1,j,1)-T(i,j,1)) / &
                & dabs(xv(i,j)-xv(i-1,j))
 
 
             !================================================================================================
-            !========================== South boundary (except left and right cells) =============================== 
+            !========================== South boundary (except left and right cells) ===============================
             !================================================================================================
-            j=1     
+            j=1
             !=========== Mass flux due to water pressure gradients ================================
-            Fpresw(i,j) = Sx_west(i,j) * K_west(i,j) * (P(i-1,j)-P(i,j)) / (dabs(xv(i,j)-xv(i-1,j))) 
-            Fprese(i,j) = Sx_east(i,j) * K_east(i,j) * (P(i+1,j)-P(i,j)) / (dabs(xv(i+1,j)-xv(i,j)))  
+            Fpresw(i,j) = Sx_west(i,j) * K_west(i,j) * (P(i-1,j)-P(i,j)) / (dabs(xv(i,j)-xv(i-1,j)))
+            Fprese(i,j) = Sx_east(i,j) * K_east(i,j) * (P(i+1,j)-P(i,j)) / (dabs(xv(i+1,j)-xv(i,j)))
             Fpress(i,j) = 0.0_dp
-            Fpresn(i,j) = Sy_north(i,j) * K_north(i,j) * (P(i,j+1)-P(i,j)) / (dabs(yv(i,j+1)-yv(i,j))) 
+            Fpresn(i,j) = Sy_north(i,j) * K_north(i,j) * (P(i,j+1)-P(i,j)) / (dabs(yv(i,j+1)-yv(i,j)))
 
             !=========== Mass flux due to gravity force =================================
-            Fgravw(i,j) = K_west(i,j) * Sy_west(i,j)                                       
-            Fgrave(i,j) = -K_east(i,j) * Sy_east(i,j)                                       
-            Fgravn(i,j) = K_north(i,j) * Sy_north(i,j)                   
+            Fgravw(i,j) = K_west(i,j) * Sy_west(i,j)
+            Fgrave(i,j) = -K_east(i,j) * Sy_east(i,j)
+            Fgravn(i,j) = K_north(i,j) * Sy_north(i,j)
             Fgravs(i,j) = -K_south(i,j) * Sy_south(i,j)
-            
 
-            !===================== heat flux ============================                   
+
+            !===================== heat flux ============================
             if (index_ground .eq. 0) then ! use of temperature at the interface soil-snow
                Fconds(i,j) = Sy_south(i,j) * k_eff_south(i,j) * (Tground-T(i,j,1)) &
                   & / (dabs(yn(i,j+1)-yn(i,j))*0.5_dp)
@@ -507,39 +507,39 @@ implicit none
             Fcondn(i,j) = Sy_south(i,j) * k_eff_north(i,j) * (T(i,j+1,1)-T(i,j,1)) &
                & / (dabs(yv(i,j)-yv(i,j+1)))
             Fconde(i,j) = Sx_east(i,j) * k_eff_east(i,j) * (T(i+1,j,1)-T(i,j,1)) &
-               & / (dabs(xv(i,j)-xv(i+1,j))) 
-            Fcondw(i,j) = Sx_west(i,j) * k_eff_west(i,j) * (T(i-1,j,1)-T(i,j,1)) & 
-               & / (dabs(xv(i+1,j)-xv(i,j))) 
+               & / (dabs(xv(i,j)-xv(i+1,j)))
+            Fcondw(i,j) = Sx_west(i,j) * k_eff_west(i,j) * (T(i-1,j,1)-T(i,j,1)) &
+               & / (dabs(xv(i+1,j)-xv(i,j)))
 
          enddo
-      endif 
-   endif   
+      endif
+   endif
 
 
 
-     
-   !===================================== Lower right cell ===================================                     
 
-   i=N-1  
+   !===================================== Lower right cell ===================================
+
+   i=N-1
    if (M .gt. 2) then ! more than one horizontal snow layer
       j=1
       if (beta .gt. 0.0001) then ! sloping snowpack
 
-            !=========== Mass flux due to water pressure gradients =========================         
-            Fpresw(i,j) = K_west(i,j)*(P(i-1,j)-P(i,j)) * & 
+            !=========== Mass flux due to water pressure gradients =========================
+            Fpresw(i,j) = K_west(i,j)*(P(i-1,j)-P(i,j)) * &
                & (Sx_west(i,j) / (dabs(xv(i,j)-xv(i-1,j))) + &
-               & Sy_west(i,j) / (dabs(yv(i,j)-yv(i-1,j))))  
+               & Sy_west(i,j) / (dabs(yv(i,j)-yv(i-1,j))))
             Fpress(i,j) = 0.0_dp
             Fpresn(i,j) = K_north(i,j)*(P(i,j+1)-P(i,j)) * &
                & (Sy_north(i,j) / (dabs(yv(i,j+1)-yv(i,j))) + &
-               & Sx_north(i,j) / (dabs(xv(i,j+1)-xv(i,j)))) 
+               & Sx_north(i,j) / (dabs(xv(i,j+1)-xv(i,j))))
 
 
             if (choice_lat_BC .eq. 2) then
-               Fprese(i,j) = 0.0_dp 
+               Fprese(i,j) = 0.0_dp
                Fgrave(i,j) = -K_east(i,j) * Sy_east(i,j)
             elseif (choice_lat_BC .eq. 1) then
-               Fprese(i,j) = 0.0_dp 
+               Fprese(i,j) = 0.0_dp
                Fgrave(i,j) = 0.0_dp
             elseif (choice_lat_BC .eq. 0) then
                Fprese(i,j) = K_east(i,j) * (P(1,j)-P(i,j)) * &
@@ -547,22 +547,22 @@ implicit none
                   & (xv(1,j) - xn(1,j)) ) + &
                   & Sy_east(i,j) / dabs( yv(i,j)-yv(1,j)))
                Fgrave(i,j) = -K_east(i,j) * Sy_east(i,j)
-            endif 
+            endif
 
             !=========== Mass flux due to gravity force =================================
-            Fgravw(i,j) = K_west(i,j) * Sy_west(i,j)                                       
-            Fgravn(i,j) = K_north(i,j) * Sy_north(i,j)                       
-            Fgravs(i,j) = -K_south(i,j) * Sy_south(i,j)  
-         
+            Fgravw(i,j) = K_west(i,j) * Sy_west(i,j)
+            Fgravn(i,j) = K_north(i,j) * Sy_north(i,j)
+            Fgravs(i,j) = -K_south(i,j) * Sy_south(i,j)
 
-            !====================== heat flux =======================================       
+
+            !====================== heat flux =======================================
             if (index_ground .eq. 0) then ! use temperature at the interface snow-soil
                Fconds(i,j) = k_eff_south(i,j) * (Tground-T(i,j,1)) * &
                   & (Sy_south(i,j) / (dabs(yn(i,j+1)-yn(i,j))*0.5_dp) + &
                   & Sx_south(i,j) / (dabs(xv(i,j)-(xn(i+1,j)+xn(i,j))*0.5_dp)))
             else
                Fconds(i,j) = Sy_south(i,j) * Qground
-            endif 
+            endif
 
             Fcondn(i,j) = k_eff_north(i,j) * (T(i,j+1,1)-T(i,j,1)) * &
                & (Sy_north(i,j) / (dabs(yv(i,j)-yv(i,j+1))) + &
@@ -576,31 +576,31 @@ implicit none
       else   ! flat snowpack (beta == 0)
 
             !=========== Mass flux due to water pressure gradients ================================
-            Fpresw(i,j) = Sx_west(i,j) * K_west(i,j) * (P(i-1,j)-P(i,j)) / (dabs(xv(i,j)-xv(i-1,j))) 
+            Fpresw(i,j) = Sx_west(i,j) * K_west(i,j) * (P(i-1,j)-P(i,j)) / (dabs(xv(i,j)-xv(i-1,j)))
             Fpress(i,j) = 0.0_dp
-            Fpresn(i,j) = Sy_north(i,j) * K_north(i,j) * (P(i,j+1)-P(i,j)) / (dabs(yv(i,j+1)-yv(i,j))) 
-                                           
+            Fpresn(i,j) = Sy_north(i,j) * K_north(i,j) * (P(i,j+1)-P(i,j)) / (dabs(yv(i,j+1)-yv(i,j)))
+
             if (choice_lat_BC .eq. 2) then
-               Fprese(i,j) = 0.0_dp 
+               Fprese(i,j) = 0.0_dp
                Fgrave(i,j) = -K_east(i,j) * Sy_east(i,j)
             elseif (choice_lat_BC .eq. 1) then
-               Fprese(i,j) = 0.0_dp 
+               Fprese(i,j) = 0.0_dp
                Fgrave(i,j) = 0.0_dp
             elseif (choice_lat_BC .eq. 0) then
                Fprese(i,j) = K_east(i,j) * (P(1,j)-P(i,j)) * &
                   & ( Sx_east(i,j) / dabs((xn(N,j)-xv(i,j)) + &
                   & (xv(1,j) - xn(1,j)) ) )
                Fgrave(i,j) = -K_east(i,j) * Sy_east(i,j)
-            endif 
+            endif
 
-            !=========== Mass flux due to gravity force ================================ 
-            Fgravw(i,j) = K_west(i,j) * Sy_west(i,j)                                       
-            Fgravn(i,j) = K_north(i,j) * Sy_north(i,j)                   
+            !=========== Mass flux due to gravity force ================================
+            Fgravw(i,j) = K_west(i,j) * Sy_west(i,j)
+            Fgravn(i,j) = K_north(i,j) * Sy_north(i,j)
             Fgravs(i,j) = -K_south(i,j) * Sy_south(i,j)
 
-            !===================== heat flux ============================                   
+            !===================== heat flux ============================
             if (index_ground .eq. 0) then ! use temperature at the interface snow-soil
-               Fconds(i,j) = Sy_south(i,j) * k_eff_south(i,j) * (Tground-T(i,j,1)) / (dabs(yn(i,j+1)-yn(i,j))*0.5_dp) 
+               Fconds(i,j) = Sy_south(i,j) * k_eff_south(i,j) * (Tground-T(i,j,1)) / (dabs(yn(i,j+1)-yn(i,j))*0.5_dp)
             else
                Fconds(i,j) = Sy_south(i,j) * Qground
             endif
@@ -609,35 +609,35 @@ implicit none
             Fconde(i,j) = Sx_east(i,j) * k_eff_east(i,j) * &
                   & (T(1,j,1)-T(i,j,1)) / dabs(xv(i,j)-xv(i-1,j))
             Fcondw(i,j) = Sx_west(i,j) * k_eff_west(i,j) * (T(i-1,j,1)-T(i,j,1)) &
-               & /(dabs(xv(i,j)-xv(i-1,j))) 
+               & /(dabs(xv(i,j)-xv(i-1,j)))
 
-      endif 
+      endif
    endif
 
 
 
 
-   !================================= Upper right cell ====================================  
+   !================================= Upper right cell ====================================
    i=N-1
    if (M .gt. 2) then ! more than two horizontal snow layers
-      j=M-1 
+      j=M-1
       if (beta .gt. 0.0001) then ! sloping snowpack
 
          !=========== Mass flux due to water pressure gradients ================================
          Fpresw(i,j) = K_west(i,j) * (P(i-1,j)-P(i,j)) * &
             & (Sx_west(i,j) / dabs(xv(i,j)-xv(i-1,j)) + &
-            & Sy_west(i,j) / dabs(yv(i,j)-yv(i-1,j))) 
+            & Sy_west(i,j) / dabs(yv(i,j)-yv(i-1,j)))
          Fpress(i,j) = K_south(i,j) * (P(i,j-1)-P(i,j)) * &
             & (Sy_south(i,j) / dabs(yv(i,j)-yv(i,j-1)) + &
-            & Sx_south(i,j) / dabs(xv(i,j)-xv(i,j-1)))   
+            & Sx_south(i,j) / dabs(xv(i,j)-xv(i,j-1)))
          Fpresn(i,j) = 0.0_dp
 
 
          if (choice_lat_BC .eq. 2) then
-            Fprese(i,j) = 0.0_dp 
+            Fprese(i,j) = 0.0_dp
             Fgrave(i,j) = -K_east(i,j) * Sy_east(i,j)
          elseif (choice_lat_BC .eq. 1) then
-            Fprese(i,j) = 0.0_dp 
+            Fprese(i,j) = 0.0_dp
             Fgrave(i,j) = 0.0_dp
          elseif (choice_lat_BC .eq. 0) then
             Fprese(i,j) = K_east(i,j) * (P(1,j)-P(i,j)) * &
@@ -645,20 +645,20 @@ implicit none
                & (xv(1,j) - xn(1,j)) ) + &
                & Sy_east(i,j) / dabs( yv(i,j)-yv(1,j)) )
             Fgrave(i,j) = -K_east(i,j) * Sy_east(i,j)
-         endif 
+         endif
          !=========== Mass flux due to gravity force =================================
-         Fgravw(i,j) = K_west(i,j) * Sy_west(i,j)                                       
+         Fgravw(i,j) = K_west(i,j) * Sy_west(i,j)
          Fgravn(i,j) = (Qin(i)+rain(i)) * Sy_north(i,j)
          Fgravs(i,j) = -K_south(i,j) * Sy_south(i,j)
 
 
-         !====================== heat flux ================================                
-         Fconds(i,j) = k_eff_south(i,j) * (T(i,j-1,1)-T(i,j,1)) * & 
+         !====================== heat flux ================================
+         Fconds(i,j) = k_eff_south(i,j) * (T(i,j-1,1)-T(i,j,1)) * &
             & (Sy_south(i,j) / dabs(yv(i,j)-yv(i,j-1)) + &
             & Sx_south(i,j) / dabs(xv(i,j)-xv(i,j-1)))
          Fcondn(i,j) = k_eff_north(i,j) * (Tss(i)-T(i,j,1)) * &
             & (Sy_north(i,j) / (dabs(yn(i,j+1)-yn(i,j))*0.5_dp) + &
-            & Sx_north(i,j) / dabs(xv(i,j)-(xn(i,j+1)+xn(i+1,j+1))*0.5_dp)) 
+            & Sx_north(i,j) / dabs(xv(i,j)-(xn(i,j+1)+xn(i+1,j+1))*0.5_dp))
          Fconde(i,j) = 0._dp
          Fcondw(i,j) = k_eff_west(i,j) * (T(i-1,j,1)-T(i,j,1)) * &
             & (Sy_west(i,j) / dabs(yv(i,j)-yv(i-1,j)) + &
@@ -669,42 +669,42 @@ implicit none
 
          !=========== Mass flux due to water pressure gradients ================================
          Fpresw(i,j) = Sx_west(i,j) * K_west(i,j) * (P(i-1,j)-P(i,j)) / &
-            & dabs(xv(i,j)-xv(i-1,j)) 
+            & dabs(xv(i,j)-xv(i-1,j))
          Fpress(i,j) = Sy_south(i,j) * K_south(i,j) * (P(i,j-1)-P(i,j)) / &
-            & dabs(yv(i,j)-yv(i,j-1))  
+            & dabs(yv(i,j)-yv(i,j-1))
          Fpresn(i,j) = 0.0_dp
-            
+
 
          if (choice_lat_BC .eq. 2) then
-            Fprese(i,j) = 0.0_dp 
+            Fprese(i,j) = 0.0_dp
             Fgrave(i,j) = -K_east(i,j) * Sy_east(i,j)
          elseif (choice_lat_BC .eq. 1) then
-            Fprese(i,j) = 0.0_dp 
+            Fprese(i,j) = 0.0_dp
             Fgrave(i,j) = 0.0_dp
          elseif (choice_lat_BC .eq. 0) then
             Fprese(i,j) = K_east(i,j) * (P(1,j)-P(i,j)) * &
                & ( Sx_east(i,j) / dabs((xn(N,j)-xv(N-1,j)) + &
                & (xv(1,j) - xn(1,j)) ) )
             Fgrave(i,j) = -K_east(i,j) * Sy_east(i,j)
-         endif 
+         endif
 
          !=========== Mass flux due to gravity force ================================
-         Fgravw(i,j) = K_west(i,j) * Sy_west(i,j)                                       
-         Fgravn(i,j) = (Qin(i)+rain(i)) * Sy_north(i,j)                         
+         Fgravw(i,j) = K_west(i,j) * Sy_west(i,j)
+         Fgravn(i,j) = (Qin(i)+rain(i)) * Sy_north(i,j)
          Fgravs(i,j) = -K_south(i,j) * Sy_south(i,j)
-       
-         !====================== heat flux =====================================         
+
+         !====================== heat flux =====================================
          Fconds(i,j) = Sy_south(i,j) * k_eff_south(i,j) * (T(i,j-1,1)-T(i,j,1)) / &
             & dabs(yv(i,j)-yv(i,j-1))
-         Fcondn(i,j) = Sy_north(i,j) * k_eff_north(i,j) * (Tss(i)-T(i,j,1)) / & 
+         Fcondn(i,j) = Sy_north(i,j) * k_eff_north(i,j) * (Tss(i)-T(i,j,1)) / &
             &(dabs(yn(i,j+1)-yn(i,j))*0.5_dp)
          Fconde(i,j) = Sx_east(i,j) * k_eff_east(i,j) * &
                   & (T(1,j,1)-T(i,j,1)) / dabs(xv(i,j)-xv(i-1,j))
          Fcondw(i,j) = Sx_west(i,j) * k_eff_west(i,j) * (T(i-1,j,1)-T(i,j,1)) / &
             & dabs(xv(i,j)-xv(i-1,j))
 
-      endif 
-   endif 
+      endif
+   endif
 
 
    !==================================================================================
@@ -721,44 +721,44 @@ implicit none
       if (beta .gt. 0.0001) then ! sloping snowpack
          Fprese(i,j) = K_east(i,j) * (P(i+1,j)-P(i,j)) * &
             & (Sx_east(i,j) / dabs(xv(i+1,j)-xv(i,j)) + &
-            & Sy_east(i,j) / dabs(yv(i+1,j)-yv(i,j)))                                 
-         Fpress(i,j) = 0.0_dp  
+            & Sy_east(i,j) / dabs(yv(i+1,j)-yv(i,j)))
+         Fpress(i,j) = 0.0_dp
          Fpresn(i,j) = 0.0_dp
       else ! flat snowpack
-         Fprese(i,j) = Sx_east(i,j) * K_east(i,j) * (P(i+1,j)-P(i,j)) / dabs(xv(i+1,j)-xv(i,j))                               
-         Fpress(i,j) = 0.0_dp  
-         Fpresn(i,j) = 0.0_dp  
+         Fprese(i,j) = Sx_east(i,j) * K_east(i,j) * (P(i+1,j)-P(i,j)) / dabs(xv(i+1,j)-xv(i,j))
+         Fpress(i,j) = 0.0_dp
+         Fpresn(i,j) = 0.0_dp
       endif
 
 
       if (choice_lat_BC .eq. 2 .or. choice_lat_BC .eq. 1) then
-         Fpresw(i,j) = 0.0_dp 
-         Fgravw(i,j) = 0.0_dp                                     
+         Fpresw(i,j) = 0.0_dp
+         Fgravw(i,j) = 0.0_dp
       elseif (choice_lat_BC .eq. 0) then
          if (beta .gt. 0.0001) then ! sloping snowpack
-            Fpresw(i,j) = K_west(i,j) * (P(M-1,j)-P(i,j)) * &
+            Fpresw(i,j) = K_west(i,j) * (P(N-1,j)-P(i,j)) * &
                & ( Sx_west(i,j) / dabs((xn(N,j)-xv(N-1,j)) + &
                & (xv(1,j) - xn(1,j)) ) + &
                & Sy_west(i,j) / dabs( yv(N-1,j)-yv(1,j)) )
          else
-            Fpresw(i,j) = K_west(i,j) * (P(M-1,j)-P(i,j)) * &
+            Fpresw(i,j) = K_west(i,j) * (P(N-1,j)-P(i,j)) * &
                & ( Sx_west(i,j) / dabs((xn(N,j)-xv(N-1,j)) + &
                & (xv(1,j) - xn(1,j)) ) )
          endif
         Fgravw(i,j) = K_west(i,j) * Sy_west(i,j)
-      endif 
+      endif
 
       !=========== Mass flux due to gravity force ================================
-      Fgrave(i,j) = -K_east(i,j) * Sy_east(i,j)                              
-      Fgravn(i,j) = (Qin(i)+rain(i)) * Sy_north(i,j)                 
-      Fgravs(i,j) = -K_south(i,j) * Sy_south(i,j) 
+      Fgrave(i,j) = -K_east(i,j) * Sy_east(i,j)
+      Fgravn(i,j) = (Qin(i)+rain(i)) * Sy_north(i,j)
+      Fgravs(i,j) = -K_south(i,j) * Sy_south(i,j)
 
-      !====================== heat flux ========================================      
-      if (beta .gt. 0.0001) then ! sloping snowpack 
+      !====================== heat flux ========================================
+      if (beta .gt. 0.0001) then ! sloping snowpack
          if (index_ground .eq. 0) then ! use temperature at the interface snow-soil
             Fconds(i,j) = k_eff_south(i,j) * (Tground-T(i,j,1)) * &
                & (Sy_south(i,j) / (dabs(yn(i,j+1)-yn(i,j))*0.5_dp) + &
-               & Sx_south(i,j) / (dabs(xv(i,j)-(xn(i+1,j)+xn(i,j))*0.5_dp)))        
+               & Sx_south(i,j) / (dabs(xv(i,j)-(xn(i+1,j)+xn(i,j))*0.5_dp)))
          else
             Fconds(i,j) = Sy_south(i,j) * Qground
          endif
@@ -773,7 +773,7 @@ implicit none
       else
          if (index_ground .eq. 0) then ! use temperature at the interface snow-soil
             Fconds(i,j) = Sy_south(i,j) * k_eff_south(i,j) * (Tground-T(i,j,1)) / &
-               & (dabs(yn(i,j+1)-yn(i,j))*0.5_dp)    
+               & (dabs(yn(i,j+1)-yn(i,j))*0.5_dp)
          else
             Fconds(i,j) = Sy_south(i,j) * Qground
          endif
@@ -786,37 +786,37 @@ implicit none
 
 
 
-   !=========================== Middle cells ==================================   
-   
+   !=========================== Middle cells ==================================
+
       j=1
       !=========== Mass flux due to water pressure gradients =================================
       if (beta .gt. 0.0001) then ! sloping snowpack
          Fpresw(2:N-2,j) = K_west(2:N-2,j) * (P(1:N-3,j)-P(2:N-2,j)) * &
             & (Sx_west(2:N-2,j) / dabs(xv(2:N-2,j)-xv(1:N-3,j)) + &
-            & Sy_west(2:N-2,j) / dabs(yv(2:N-2,j)-yv(1:N-3,j)))                               
+            & Sy_west(2:N-2,j) / dabs(yv(2:N-2,j)-yv(1:N-3,j)))
          Fprese(2:N-2,j) = K_east(2:N-2,j) * (P(3:N-1,j)-P(2:N-2,j)) * &
             & (Sx_east(2:N-2,j) / dabs(xv(3:N-1,j)-xv(2:N-2,j)) + &
-            & Sy_east(2:N-2,j) / dabs(yv(3:N-1,j)-yv(2:N-2,j)))                                 
-         Fpress(2:N-2,j) = 0.0_dp   
-         Fpresn(2:N-2,j) = 0.0_dp   
+            & Sy_east(2:N-2,j) / dabs(yv(3:N-1,j)-yv(2:N-2,j)))
+         Fpress(2:N-2,j) = 0.0_dp
+         Fpresn(2:N-2,j) = 0.0_dp
       else ! flat snowpack
          Fpresw(2:N-2,j) = Sx_west(2:N-2,j) * K_west(2:N-2,j) * (P(1:N-3,j)-P(2:N-2,j)) / &
             & dabs(xv(2:N-2,j)-xv(1:N-3,j))
-         Fprese(2:N-2,j) = Sx_east(2:N-2,j) * K_east(2:N-2,j) * (P(3:N-1,j)-P(2:N-2,j)) / & 
+         Fprese(2:N-2,j) = Sx_east(2:N-2,j) * K_east(2:N-2,j) * (P(3:N-1,j)-P(2:N-2,j)) / &
             & dabs(xv(3:N-1,j)-xv(2:N-2,j))
-         Fpress(2:N-2,j) = 0.0_dp  
-         Fpresn(2:N-2,j) = 0.0_dp  
+         Fpress(2:N-2,j) = 0.0_dp
+         Fpresn(2:N-2,j) = 0.0_dp
       endif
 
       !=========== Mass flux due to gravity force =================================
-      Fgravw(2:N-2,j) = K_west(2:N-2,j) * Sy_west(2:N-2,j)                                    
-      Fgrave(2:N-2,j) = -K_east(2:N-2,j) * Sy_east(2:N-2,j)                             
-      Fgravn(2:N-2,j) = (Qin(2:N-2)+rain(2:N-2)) * Sy_north(2:N-2,j)                
-      Fgravs(2:N-2,j) = -K_south(2:N-2,j) * Sy_south(2:N-2,j) 
-   
+      Fgravw(2:N-2,j) = K_west(2:N-2,j) * Sy_west(2:N-2,j)
+      Fgrave(2:N-2,j) = -K_east(2:N-2,j) * Sy_east(2:N-2,j)
+      Fgravn(2:N-2,j) = (Qin(2:N-2)+rain(2:N-2)) * Sy_north(2:N-2,j)
+      Fgravs(2:N-2,j) = -K_south(2:N-2,j) * Sy_south(2:N-2,j)
 
 
-      !====================== heat flux =======================================       
+
+      !====================== heat flux =======================================
       if (beta.gt. 0.00001) then ! sloping snowpack
          if (index_ground .eq. 0) then ! use temperature at the interface snow-soil
             Fconds(2:N-2,j) = k_eff_south(2:N-2,j) * (Tground-T(2:N-2,j,1)) * &
@@ -847,32 +847,32 @@ implicit none
             & dabs(xv(2:N-2,j)-xv(3:N-1,j))
          Fcondw(2:N-2,j) = Sx_west(2:N-2,j) * k_eff_west(2:N-2,j) * (T(1:N-3,j,1)-T(2:N-2,j,1)) / &
             & dabs(xv(2:N-2,j)-xv(1:N-3,j))
-      endif  
+      endif
 
 
    !===================================== Right cell ==========================
-      i=N-1   
+      i=N-1
       j=1
       !=========== Mass flux due to water pressure gradients ================================
       if (beta .gt. 0.0001)then ! sloping snowpack
          Fpresw(i,j) = K_west(i,j) * (P(i-1,j)-P(i,j)) * &
             & (Sx_west(i,j) / dabs(xv(i,j)-xv(i-1,j)) + &
-            & Sy_west(i,j) / dabs(yv(i,j)-yv(i-1,j)))                               
+            & Sy_west(i,j) / dabs(yv(i,j)-yv(i-1,j)))
          Fpress(i,j) = 0.0_dp
-         Fpresn(i,j) = 0.0_dp  
+         Fpresn(i,j) = 0.0_dp
       else
          Fpresw(i,j) = Sx_west(i,j) * K_west(i,j) * (P(i-1,j)-P(i,j)) / &
             & dabs(xv(i,j)-xv(i-1,j))
          Fpress(i,j) = 0.0_dp
-         Fpresn(i,j) = 0.0_dp  
+         Fpresn(i,j) = 0.0_dp
       endif
 
 
       if (choice_lat_BC .eq. 2) then
-         Fprese(i,j) = 0.0_dp 
+         Fprese(i,j) = 0.0_dp
          Fgrave(i,j) = -K_east(i,j) * Sy_east(i,j)
       elseif (choice_lat_BC .eq. 1) then
-         Fprese(i,j) = 0.0_dp 
+         Fprese(i,j) = 0.0_dp
          Fgrave(i,j) = 0.0_dp
       elseif (choice_lat_BC .eq. 0) then
          if (beta .gt. 0.0001) then ! sloping snowpack
@@ -880,22 +880,22 @@ implicit none
                & ( Sx_east(i,j) / dabs((xn(N,j)-xv(N-1,j)) + &
                & (xv(1,j) - xn(1,j)) ) + &
                & Sy_east(i,j) / dabs( yv(N+1,j)-yv(1,j)) )
-         else 
+         else
             Fprese(i,j) = K_east(i,j) * (P(1,j)-P(i,j)) * &
                & ( Sx_east(i,j) / dabs((xn(N,j)-xv(N-1,j)) + &
                & (xv(1,j) - xn(1,j)) ))
-               
+
          endif
          Fgrave(i,j) = -K_east(i,j) * Sy_east(i,j)
-      endif 
+      endif
 
       !=========== Mass flux due to gravity force ================================
-      Fgravw(i,j) = K_west(i,j) * Sy_west(i,j)                                    
-      Fgravn(i,j) = (Qin(i)+rain(i)) * Sy_north(i,j)               
-      Fgravs(i,j) = -K_south(i,j) * Sy_south(i,j) 
+      Fgravw(i,j) = K_west(i,j) * Sy_west(i,j)
+      Fgravn(i,j) = (Qin(i)+rain(i)) * Sy_north(i,j)
+      Fgravs(i,j) = -K_south(i,j) * Sy_south(i,j)
 
 
-      !====================== heat flux ========================================      
+      !====================== heat flux ========================================
       if (beta .gt. 0.0001) then ! sloping snowpack
          if (index_ground .eq. 0) then ! use temperature at the interface snow-soil
             Fconds(i,j) = k_eff_south(i,j) * (Tground-T(i,j,1)) * &
@@ -919,7 +919,7 @@ implicit none
          Fconde(i,j) = 0.0_dp
          Fcondw(i,j) = Sx_west(i,j) * k_eff_west(i,j) * (T(i-1,j,1)-T(i,j,1)) / &
             & dabs(xv(i,j)-xv(i-1,j))
-      endif  
+      endif
 
    endif
 
