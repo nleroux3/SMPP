@@ -26,8 +26,7 @@ real(dp) :: P_w, &                          ! Dummy variable used in this script
         &   Sd_Pid, &                       ! Saturation on drying boundary curve at reversal point between imbibition and drying
         &   Si_Pdi, &                       ! Saturation on wetting boundary curve at reversal point between drying and imbibition               
         &   Si_Pid, &                       ! Saturation on wetting boundary curve at reversal point between imbibition and drying
-        &   theta_w, &                       ! Dummy variable used in this script to compute water content on wetting boundary curve [-]
-        &   P_d
+        &   theta_w                         ! Dummy variable used in this script to compute water content on wetting boundary curve [-]
 integer :: wrc_ini, &                       ! Variable to know on which water retention curve the cell is initally
        &   order                   ! Variable to know the order of the water retention curve
 integer, intent(inout) :: wrc               ! Variable to know on which water retention curve the cell is at the end of the script
@@ -101,24 +100,11 @@ if (wrc_ini .eq. 1) then  ! On main wetting WRC
 
    else ! stays on main wetting curve
 
-      if (theta_2 .gt. (porosity-1e-6_dp)) then ! On main drying curve
-
-         theta_plus = theta_2 - (porosity -1e-6_dp)
-         theta_2 = porosity-1e-6_dp
-         wrc = 2 ! Moves to main drying curve below
-         order = 1
-
-         Pdi = -huge(1._dp)
-         Pid = 0._dp
-
-         theta_di(order) = irreducible
-         theta_id(order) = porosity
-
-         theta_s(order) = porosity
-         theta_r(order) = irreducible
-         P_new = -((((theta_2 - irreducible)/(porosity-irreducible))**(-1.0_dp/mm) - 1.0_dp) &
-            &   **(1.0_dp/nn)) / alpha  
-
+      if (theta_2 .gt. porosity) then
+         theta_plus = theta_2 - porosity
+         theta_2 = porosity
+         P_new = 0._dp
+         wrc = 5
       else
 
          theta_s(order) = porosity
@@ -137,66 +123,89 @@ endif
 
 if (wrc_ini .eq. 3) then  ! On drying scanning curve
 
-      if (theta_2 .gt. (porosity-1e-6_dp)) then ! On main drying curve
+   if (theta_2 .le. theta_1) then ! stays on drying scanning curve 
 
-         theta_plus = theta_2 - (porosity -1e-6_dp)
-         theta_2 = porosity-1e-6_dp
-         wrc = 2 ! Moves to main drying curve below
-         order = 1
+      do while (theta_2 .le. theta_di(order)) ! Moves to drying scanning curve of previous order
+         order = order - 2
+      enddo
 
-         Pdi = -huge(1._dp)
-         Pid = 0._dp
-
-         theta_di(order) = irreducible
-         theta_id(order) = porosity
-
-         theta_s(order) = porosity
-         theta_r(order) = irreducible
-         P_new = -((((theta_2 - irreducible)/(porosity-irreducible))**(-1.0_dp/mm) - 1.0_dp) &
-            &   **(1.0_dp/nn)) / alpha  
-
-      else
-
-         P_new = - (((theta_2 - theta_r(order))/(theta_s(order) &
+      P_new = - (((theta_2 - theta_r(order))/(theta_s(order) &
               & - theta_r(order)))**(-1._dp/mm)-1._dp)**(1._dp/nn)/alpha
        
 
-         P_w = - (((theta_2 - irreducible)/(porosity - irreducible))**(-1._dp/mm)-1._dp)**(1._dp/nn)&
-              & /alpha_wetting ! Pressure on the main drying curve
+      P_w = - (((theta_2 - irreducible)/(porosity - irreducible))**(-1._dp/mm)-1._dp)**(1._dp/nn)&
+              & /alpha ! Pressure on the main drying curve
 
 
-         if (dabs(P_new) .le. dabs(P_w) .or. theta_2 > theta_id(order)) then ! Moves to main drying curve
-            wrc = 1
-            order = 1
-            P_new = P_w
-         endif
-
-      endif
-endif
-
-if (wrc_ini .eq. 4) then  ! On wetting scanning scanning
-
-
-      if (theta_2 .gt. (porosity-1e-6_dp)) then ! On main drying curve
-
-         theta_plus = theta_2 - (porosity -1e-6_dp)
-         theta_2 = porosity-1e-6_dp
-         wrc = 2 ! Moves to main drying curve below
+      if (dabs(P_new) .ge. dabs(P_w)) then ! Moves to main drying curve
+         wrc = 2
          order = 1
+         P_new = P_w
+      endif
 
-         Pdi = -huge(1._dp)
-         Pid = 0._dp
 
-         theta_di(order) = irreducible
-         theta_id(order) = porosity
+   else  !WRC moves to wetting scanning (di: drainage to imbibition)
 
-         theta_s(order) = porosity
-         theta_r(order) = irreducible
-         P_new = -((((theta_2 - irreducible)/(porosity-irreducible))**(-1.0_dp/mm) - 1.0_dp) &
-            &   **(1.0_dp/nn)) / alpha  
+
+      if (theta_2 .gt. porosity) then
+         theta_plus = theta_2 - porosity
+         theta_2 = porosity
+         P_new = 0._dp
+         wrc = 5
 
       else
 
+         order = order + 1 
+         wrc = 4
+
+         Pdi = P
+         theta_di(order) = theta_1
+         theta_id(order) = theta_id(order-1)
+
+         Si_Pdi = min((1._dp + (-alpha_wetting * Pdi)**nn)**(-mm), 0.9999_dp) ! To avoid divergence in theta_r below
+         Si_Pid = (1._dp + (-alpha_wetting * Pid)**nn)**(-mm)
+
+         theta_s(order) = (theta_di(order)*(1._dp - Si_Pid) - theta_id(order) &
+              & * (1._dp - Si_Pdi))  /min(Si_Pdi - Si_Pid, -1e-30_dp)
+
+         theta_r(order) = (Si_Pdi * theta_s(order) - theta_di(order)) / (Si_Pdi - 1._dp)
+
+         do while (theta_2 .ge. theta_id(order)) 
+            order = order - 2
+         enddo
+
+         if (order .gt. 11) order = order - 2
+
+         P_new = - (((theta_2 - theta_r(order))/(theta_s(order) &
+              & - theta_r(order)))**(-1._dp/mm)-1._dp)**(1._dp/nn)/alpha_wetting
+
+         P_w = - (((theta_2 - irreducible)/(porosity - irreducible))**(-1._dp/mm)-1._dp)**(1._dp/nn)&
+              & /alpha_wetting ! Pressure on the main wetting curve
+
+         if (dabs(P_new) .le. dabs(P_w) .or. order .eq. 1) then ! Moves to main wetting curve
+            wrc = 1
+            order = 1 
+            P_new = P_w
+         endif
+      endif
+   endif
+endif
+
+
+if (wrc_ini .eq. 4) then  ! On wetting scanning scanning
+
+   if (theta_2 .ge. theta_1) then ! stays on wetting scanning curve
+
+      if (theta_2 .gt. porosity) then
+         theta_plus = theta_2 - porosity
+         theta_2 = porosity
+         P_new = 0._dp
+         wrc = 5
+      else
+
+         do while (theta_2 .ge. theta_id(order)) ! Moves to wetting scanning curve of previous order
+            order = order - 2
+         enddo
 
          P_new = - (((theta_2 - theta_r(order))/(theta_s(order) &
                  & - theta_r(order)))**(-1._dp/mm)-1._dp)**(1._dp/nn) /alpha_wetting
@@ -204,52 +213,72 @@ if (wrc_ini .eq. 4) then  ! On wetting scanning scanning
          P_w = - (((theta_2 - irreducible)/(porosity - irreducible))**(-1._dp/mm)-1._dp)**(1._dp/nn)&
               & /alpha_wetting ! Pressure on the main wetting curve
 
-         P_d = - (((theta_2 - irreducible)/(porosity - irreducible))**(-1._dp/mm)-1._dp)**(1._dp/nn)&
-              & /alpha ! Pressure on the main drying curve
-
-         if (dabs(P_new) .le. dabs(P_w)) then ! Moves to main wetting curve
+         if (dabs(P_new) .le. dabs(P_w) .or. order .eq. 1) then ! Moves to main wetting curve
             wrc = 1 
             order = 1
             P_new = P_w
-          elseif (dabs(P_new) .ge. dabs(P_d) .or. theta_2 .le. theta_di(order)) then ! Moves to main wetting curve
-            wrc = 2 
-            order = 1
-            P_new = P_d
          endif
 
       endif
 
+
+   else  ! WRC moves to drying scanning curve (id : imbibition to dyring)
+      order  = order + 1
+
+      wrc = 3
+
+      Pid = P
+      theta_id(order) = theta_1 
+      theta_di(order) = theta_di(order-1) 
+
+      Sd_Pdi = min((1._dp + (-alpha * Pdi)**nn)**(-mm), 0.9999_dp)  ! To avoid divergence in theta_r below
+      Sd_Pid = (1._dp + (-alpha * Pid)**nn)**(-mm)
+
+      theta_s(order) = (theta_di(order)*(1._dp - Sd_Pid) - theta_id(order) &
+           & * (1._dp - Sd_Pdi))  / min(Sd_Pdi - Sd_Pid, -1e-30_dp)
+
+      theta_r(order) = (Sd_Pdi * theta_s(order) - theta_di(order)) / (Sd_Pdi - 1._dp)
+
+      do while (theta_2 .le. theta_di(order)) ! Moves to drying scanning curve of previous order
+         order = order - 2
+      enddo
+
+      if (order .gt. 11) order = order - 2 ! Max order of 11
+
+      P_new = - (((theta_2 - theta_r(order))/(theta_s(order) &
+              & - theta_r(order)))**(-1._dp/mm)-1._dp)**(1._dp/nn) /alpha
+
+      P_w = - (((theta_2 - irreducible)/(porosity - irreducible))**(-1._dp/mm)-1._dp)**(1._dp/nn)&
+              & /alpha ! Pressure on main drying curve
+
+
+      if (dabs(P_new) .ge. dabs(P_w)) then ! Moves to main drying curve
+         wrc = 2
+         order = 1
+         P_new = P_w
+      endif
+
+
+   endif
 endif
 
-if (wrc_ini .eq. 2) then  ! On main drying curve
 
+
+if (wrc_ini .eq. 2) then  ! On main drying curve
    order = 1
 
    Pdi = -huge(1._dp)
-   Pid = 0._dp
+   Pid = P
    theta_id(order) = porosity 
    theta_di(order) = irreducible
 
    if (theta_2 .gt. theta_1) then ! Moves to wetting scanning (di: drainage to imbibition)
 
-      if (theta_2 .gt. (porosity-1e-6_dp)) then ! On main drying curve
-
-         theta_plus = theta_2 - (porosity -1e-6_dp)
-         theta_2 = porosity-1e-6_dp
-         wrc = 2 ! Moves to main drying curve below
-         order = 1
-
-         Pdi = -huge(1._dp)
-         Pid = 0._dp
-
-         theta_di(order) = irreducible
-         theta_id(order) = porosity
-
-         theta_s(order) = porosity
-         theta_r(order) = irreducible
-         P_new = -((((theta_2 - irreducible)/(porosity-irreducible))**(-1.0_dp/mm) - 1.0_dp) &
-            &   **(1.0_dp/nn)) / alpha  
-
+     if (theta_2 .gt. porosity) then
+         theta_plus = theta_2 - porosity
+         theta_2 = porosity
+         P_new = 0._dp
+         wrc = 5
       else
 
          order = order + 1
@@ -280,7 +309,6 @@ if (wrc_ini .eq. 2) then  ! On main drying curve
             order = 1 
             P_new = P_w
          endif  
-
       endif
 
    else  ! Stays on main drying curve
@@ -294,6 +322,23 @@ if (wrc_ini .eq. 2) then  ! On main drying curve
          &   **(1.0_dp/nn)) / alpha  
 
    endif
+endif
+
+
+
+if (wrc_ini .eq. 5) then ! Is at complete saturation
+
+   if (theta_2 .lt. porosity) then ! draining, moves to main drainage curve
+      wrc = 2
+      P_new = -((((theta_2 - irreducible)/(porosity-irreducible))**(-1.0_dp/mm) - 1.0_dp) &
+         &   **(1.0_dp/nn)) / alpha  
+
+   else
+      P_new = 0._dp
+      theta_plus = theta_2 - porosity
+      theta_2 = porosity
+   endif
+
 endif
 
 
